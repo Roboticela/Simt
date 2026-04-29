@@ -1,9 +1,17 @@
 /**
  * Qibla bearing (great-circle to Makkah) and Saff (row) bearing.
- * Direct port of the formula `QD` cell in workbook Sheet `A`:
+ * Formula mirrors the `QD` cell in workbook Sheet `A`:
  *
  *   CQA = ATAN2( sin(LGM - LGR),
  *                cos(LTR) * tan(LT2) - sin(LTR) * cos(LGM - LGR) ) * RD
+ *
+ * ⚠ Convention note: the reference workbook stores ALL longitudes with an
+ * East-as-negative (West-positive) sign, which reflects the azimuth axis and
+ * makes its printed CQA ≈ 105.87° for Mardan. The app uses the standard
+ * East-positive convention (positive lng = East), yielding CQA ≈ 254° — the
+ * correct geographic clockwise-from-North bearing toward Makkah from Pakistan.
+ * The two values are related by: workbook_CQA ≈ 360° − app_CQA (mod 360).
+ * The app value is the one to use with a real compass.
  */
 import { DR, MAKKAH, RD } from './constants';
 import type { Coordinates } from './types';
@@ -25,12 +33,15 @@ export function qiblaBearing(observer: Coordinates): number {
 
 /**
  * Saff (prayer-row) bearing — perpendicular to the Qibla direction.
- * Workbook rule (Sheet A constants): CSF = CQA − 90 when CQA > 90°,
- * CSF = CQA + 90 when CQA < 90°.  For Pakistan locations (CQA ≈ 254°)
- * this gives CSF ≈ 164° (SSE), not 344° (NNW).
+ * Workbook rule (Sheet A constants):
+ *   CSF = CQA − 90  when CQA > 90°   (e.g. Pakistan CQA ≈ 254° → CSF ≈ 164°)
+ *   CSF = CQA + 90  when CQA ≤ 90°   (e.g. eastern locations CQA ≈ 45° → CSF ≈ 135°)
+ * Both branches always produce a southward-facing row direction for observers
+ * north of Makkah.
  */
 export function saffBearing(qiblaDeg: number): number {
-  return ((qiblaDeg - 90) % 360 + 360) % 360;
+  const offset = qiblaDeg > 90 ? -90 : 90;
+  return ((qiblaDeg + offset) % 360 + 360) % 360;
 }
 
 /**

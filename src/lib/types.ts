@@ -31,9 +31,9 @@ export interface CalculationMethod {
   name: string;
   fajrAngle: number; // degrees below horizon
   ishaAngle: number;
-  shafaqAhmarAngle: number; // red twilight
-  shafaqAbyazAngle: number; // white twilight (==isha for Karachi)
-  ishraqAngle: number; // approx +4°
+  shafaqAhmarAngle: number; // red twilight  (~4° below horizon)
+  shafaqAbyazAngle: number; // white twilight (~12° below horizon, distinct from Isha at 18°)
+  ishraqAngle: number;      // approx +4° above horizon
 }
 
 export const METHODS: Record<string, CalculationMethod> = {

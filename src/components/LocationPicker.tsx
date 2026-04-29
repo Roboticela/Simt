@@ -44,7 +44,13 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
   }, [list, query]);
 
   function pickCity(c: RawCity) {
-    onSelect({ name: c.name, lat: c.lat, lng: c.lng, timezone: current.timezone });
+    // Pakistan locations are always UTC+5 (PKT).
+    // For world cities the data carries no timezone field, so we derive the
+    // nearest whole-hour UTC offset from longitude (±15° per hour).
+    // This is accurate for most standard-offset zones; users can fine-tune
+    // via the Custom tab for half-hour / quarter-hour zones (e.g. India UTC+5:30).
+    const timezone = tab === 'pakistan' ? 5 : Math.round(c.lng / 15);
+    onSelect({ name: c.name, lat: c.lat, lng: c.lng, timezone });
     onClose();
   }
 

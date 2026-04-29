@@ -84,7 +84,7 @@ export function TodayPrayerCard() {
 
   const nextEntry = useMemo(() => {
     const order = settings.asrSchool === 2
-      ? NEXT_ORDER
+      ? NEXT_ORDER.filter((k) => k !== 'asrShafi')
       : NEXT_ORDER.filter((k) => k !== 'asrHanafi');
     const candidates = order
       .map((k) => ({ key: k, value: times[k] ?? null }))

@@ -135,14 +135,20 @@ export function computeQiblaShadowTimes(
   const saff  = findLha(saffFore,  saffAfter);
 
   /**
-   * Status: QNOS (Qibla North Of Sun) when the fore-noon shadow points roughly
-   * toward Qibla. This occurs when Qibla is in the western half of the compass
-   * (bearing ≥ 180°). For eastern Qibla the fore-noon shadow points away → QSOS.
+   * Status: QNOS (Qibla North Of Sun) when, at sunrise, the sun's azimuth is
+   * less than the Qibla bearing — meaning the Qibla is "north of" (clockwise
+   * ahead of) the sun. In that case the fore-noon shadow points roughly toward
+   * Qibla. Computed dynamically from the actual sunrise azimuth rather than a
+   * static 180° threshold (which fails for Qibla bearings between 90°–180°).
+   *
+   * Workbook rule (Sheet A/B): if CQA < NAS → QNOS; if CQA > NAS → QSOS,
+   * where NAS is the sun azimuth from North at sunrise.
    */
+  const sunriseAzimuth = sunAzimuthAtLha(sunriseLha, lat, dsun);
   const status: QiblaShadowTimes['status'] =
     qibla.fore == null && qibla.after == null
       ? 'N/A'
-      : options.qiblaDeg >= 180
+      : sunriseAzimuth < options.qiblaDeg
         ? 'QNOS'
         : 'QSOS';
 
