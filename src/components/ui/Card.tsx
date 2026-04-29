@@ -1,10 +1,13 @@
 import type { HTMLAttributes, ReactNode } from 'react';
+import { motion } from 'framer-motion';
 
 interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: ReactNode;
   subtitle?: ReactNode;
   action?: ReactNode;
   padded?: boolean;
+  animate?: boolean;
+  delay?: number;
 }
 
 export function Card({
@@ -12,38 +15,50 @@ export function Card({
   subtitle,
   action,
   padded = true,
+  animate = true,
+  delay = 0,
   className,
   children,
   ...rest
 }: CardProps) {
-  return (
+  const content = (
     <section
       {...rest}
       className={[
-        'rounded-xl border border-slate-200 bg-white',
-        'dark:border-slate-800 dark:bg-slate-900',
-        'overflow-hidden',
+        'overflow-hidden rounded-3xl border border-border/60 bg-card',
         className ?? '',
       ].join(' ')}
     >
       {(title || subtitle || action) && (
-        <header className="flex items-start justify-between gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+        <header className="flex flex-col gap-2 border-b border-border/50 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             {title && (
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+              <h2 className="text-base font-bold tracking-tight text-foreground">
                 {title}
               </h2>
             )}
             {subtitle && (
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="mt-0.5 text-xs leading-5 text-foreground/50">
                 {subtitle}
               </p>
             )}
           </div>
-          {action && <div className="shrink-0">{action}</div>}
+          {action && <div className="shrink-0 self-start">{action}</div>}
         </header>
       )}
-      <div className={padded ? 'p-4' : ''}>{children}</div>
+      <div className={padded ? 'p-5' : ''}>{children}</div>
     </section>
+  );
+
+  if (!animate) return content;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, delay, ease: 'easeOut' }}
+    >
+      {content}
+    </motion.div>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 
 export interface TabItem<T extends string = string> {
   id: T;
@@ -25,7 +26,8 @@ export function Tabs<T extends string>({
     <div
       role="tablist"
       className={[
-        'inline-flex rounded-lg p-1 bg-slate-100 dark:bg-slate-800',
+        'relative inline-flex rounded-2xl p-1 ring-1 ring-border/60',
+        'bg-accent/50',
         fullWidth ? 'flex w-full' : '',
       ].join(' ')}
     >
@@ -39,17 +41,24 @@ export function Tabs<T extends string>({
             aria-selected={active}
             onClick={() => onChange(item.id)}
             className={[
-              'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60',
+              'relative inline-flex items-center justify-center gap-1.5 rounded-xl font-semibold transition-colors z-10',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
               fullWidth ? 'flex-1' : '',
               size === 'sm' ? 'h-7 px-3 text-xs' : 'h-9 px-4 text-sm',
-              active
-                ? 'bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100',
+              active ? 'text-foreground' : 'text-foreground/50 hover:text-foreground/80',
             ].join(' ')}
           >
-            {item.icon}
-            {item.label}
+            {active && (
+              <motion.span
+                layoutId="tabHighlight"
+                className="absolute inset-0 rounded-xl bg-card shadow-sm"
+                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-1.5">
+              {item.icon}
+              {item.label}
+            </span>
           </button>
         );
       })}

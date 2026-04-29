@@ -1,20 +1,21 @@
 import { Select } from './ui/Select';
-import { MONTH_NAMES_EN } from '../lib/constants';
+import { useLang } from '../contexts/LanguageContext';
+import { monthLabel, t } from '../lib/i18n';
 
-interface Props {
-  value: number; // 1..12
-  onChange: (m: number) => void;
-  label?: string;
-}
+interface Props { value: number; onChange: (m: number) => void; }
 
-const OPTIONS = MONTH_NAMES_EN.map((label, i) => ({ label, value: String(i + 1) }));
+export function MonthSelector({ value, onChange }: Props) {
+  const { lang } = useLang();
+  const options = Array.from({ length: 12 }, (_, i) => ({
+    label: monthLabel(lang, i),
+    value: String(i + 1),
+  }));
 
-export function MonthSelector({ value, onChange, label = 'Month' }: Props) {
   return (
-    <div className="max-w-xs">
+    <div className="w-full sm:w-44">
       <Select
-        label={label}
-        options={OPTIONS}
+        label={t(lang, 'calendar')}
+        options={options}
         value={String(value)}
         onValueChange={(v) => onChange(parseInt(v, 10))}
       />

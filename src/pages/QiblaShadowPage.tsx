@@ -1,30 +1,55 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { stagger, fadeUp } from '../lib/animations';
+import { Sun } from 'lucide-react';
 import { LocationCard } from '../components/LocationCard';
 import { MonthSelector } from '../components/MonthSelector';
 import { YearSelector } from '../components/YearSelector';
 import { QiblaShadowMonthTable } from '../components/QiblaShadowMonthTable';
 import { Card } from '../components/ui/Card';
+import { useLang } from '../contexts/LanguageContext';
+import { t } from '../lib/i18n';
+
 
 export function QiblaShadowPage() {
+  const { lang } = useLang();
   const today = new Date();
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [year, setYear] = useState(today.getFullYear());
+
   return (
-    <div className="space-y-6">
-      <LocationCard />
-      <Card title="What is Qibla Shadow Time?" subtitle="When the sun aligns with Qibla / Saff azimuth">
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          On any sunny day, an object's shadow points <strong>away from the sun</strong>. This page lists the
-          two daily moments (fore-noon &amp; after-noon) when the sun's azimuth equals the Qibla bearing or its
-          perpendicular Saff bearing — at those instants any vertical stick's shadow indicates the prayer
-          direction without a compass.
+    <motion.div variants={stagger} initial="initial" animate="animate" className="space-y-4 sm:space-y-5">
+      <motion.section variants={fadeUp} className="space-y-1 px-1">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+          <Sun className="h-3.5 w-3.5" />
+          {t(lang, 'shadow')}
         </p>
-      </Card>
-      <div className="flex flex-wrap items-end gap-3">
+        <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+          {t(lang, 'qiblaShadow')}
+        </h2>
+        <p className="text-sm leading-6 text-foreground/50">{t(lang, 'whatIsShadow')}</p>
+      </motion.section>
+
+      <motion.div variants={fadeUp}><LocationCard /></motion.div>
+
+      <motion.div variants={fadeUp}>
+        <Card title={t(lang, 'whatIsShadow')} subtitle={t(lang, 'shadowStatusNote')}>
+          <p className="text-sm leading-6 text-foreground/70">{t(lang, 'shadowExplain')}</p>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        variants={fadeUp}
+        className="grid grid-cols-2 gap-3 rounded-3xl border border-border/50 bg-card/70 p-3 backdrop-blur sm:flex sm:flex-wrap sm:items-end"
+      >
         <MonthSelector value={month} onChange={setMonth} />
         <YearSelector value={year} onChange={setYear} />
-      </div>
-      <QiblaShadowMonthTable month={month} year={year} />
-    </div>
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <QiblaShadowMonthTable month={month} year={year} />
+      </motion.div>
+    </motion.div>
   );
 }
+

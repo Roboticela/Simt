@@ -23,7 +23,16 @@ function normalizeAzimuthDelta(value: number, target: number): number {
   return diff;
 }
 
-/** Bisect within [a, b] on f(x) = sun_az(x) - target. Returns null if no sign change. */
+/**
+ * Bisect within [a, b] on f(x) = normalised azimuth delta.
+ * Returns null when:
+ *   • no sign change (sun arc doesn't cross target), OR
+ *   • sign change is caused by the ±180 wrap-around, not a real crossing.
+ *
+ * Wrap-around detection: a genuine zero-crossing keeps |fa − fb| ≤ 180.
+ * When the normalised diff jumps across the ±180 boundary (e.g. +124 → −164,
+ * |Δ| = 288) there is no real crossing — the sun never reaches that azimuth.
+ */
 function bisect(
   fn: (lha: number) => number,
   a: number,
@@ -34,7 +43,8 @@ function bisect(
   let fb = fn(b);
   if (fa === 0) return a;
   if (fb === 0) return b;
-  if (fa * fb > 0) return null;
+  if (fa * fb > 0) return null;                   // same sign  — no crossing
+  if (Math.abs(fa - fb) > 180) return null;       // wrap-around — false sign change
   let lo = a;
   let hi = b;
   for (let i = 0; i < iterations; i++) {

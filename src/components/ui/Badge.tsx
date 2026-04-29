@@ -1,14 +1,15 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
-type Tone = 'neutral' | 'emerald' | 'amber' | 'rose' | 'sky' | 'indigo';
+type Tone = 'neutral' | 'emerald' | 'amber' | 'rose' | 'sky' | 'indigo' | 'primary';
 
 const TONE: Record<Tone, string> = {
-  neutral: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
-  emerald: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
-  amber: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-  rose: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
-  sky: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
-  indigo: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300',
+  neutral: 'bg-accent text-foreground/70',
+  emerald: 'bg-emerald-500/15 text-emerald-500 dark:bg-emerald-400/20 dark:text-emerald-300',
+  amber:   'bg-amber-500/15 text-amber-600 dark:bg-amber-400/20 dark:text-amber-300',
+  rose:    'bg-rose-500/15 text-rose-600 dark:bg-rose-400/20 dark:text-rose-300',
+  sky:     'bg-sky-500/15 text-sky-600 dark:bg-sky-400/20 dark:text-sky-300',
+  indigo:  'bg-indigo-500/15 text-indigo-600 dark:bg-indigo-400/20 dark:text-indigo-300',
+  primary: 'bg-primary/15 text-primary',
 };
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
@@ -21,7 +22,7 @@ export function Badge({ tone = 'neutral', className, children, ...rest }: BadgeP
     <span
       {...rest}
       className={[
-        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider',
         TONE[tone],
         className ?? '',
       ].join(' ')}

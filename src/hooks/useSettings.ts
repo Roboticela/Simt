@@ -3,14 +3,14 @@ import type { LocationConfig } from '../lib/types';
 import { METHODS } from '../lib/types';
 import { DEFAULT_LOCATION } from '../lib/constants';
 
-const STORAGE_KEY = 'qiblatime.settings.v1';
+const STORAGE_KEY = 'simt.settings.v1';
 
 export interface AppSettings {
   location: LocationConfig;
   methodId: string;
   asrSchool: 1 | 2;
-  /** Display language: 'en' | 'ur'. */
-  language: 'en' | 'ur';
+  /** Display language: 'en' | 'ar' | 'ur'. */
+  language: 'en' | 'ar' | 'ur';
   /** Time format: '12' | '24'. */
   timeFormat: '12' | '24';
   /** Show seconds in time strings. */

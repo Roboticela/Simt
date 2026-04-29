@@ -1,20 +1,20 @@
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useAppSettings } from '../context/SettingsContext';
 import { qiblaBearing, saffBearing } from '../lib/qibla';
 import { computeQiblaShadowTimes } from '../lib/qiblaShadow';
 import { daysInMonth } from '../lib/time';
-import { MONTH_NAMES_EN } from '../lib/constants';
 import { TimeText } from './TimeText';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
+import { useLang } from '../contexts/LanguageContext';
+import { t, monthLabel } from '../lib/i18n';
 
-interface Props {
-  month: number;
-  year?: number;
-}
+interface Props { month: number; year?: number; }
 
 export function QiblaShadowMonthTable({ month, year = new Date().getFullYear() }: Props) {
   const { settings } = useAppSettings();
+  const { lang } = useLang();
   const days = daysInMonth(year, month);
 
   const { rows, qibla, saff } = useMemo(() => {
@@ -24,70 +24,80 @@ export function QiblaShadowMonthTable({ month, year = new Date().getFullYear() }
     for (let d = 1; d <= days; d++) {
       list.push({
         day: d,
-        ...computeQiblaShadowTimes(settings.location, month, d, {
-          qiblaDeg: qb,
-          saffDeg: sf,
-        }),
+        ...computeQiblaShadowTimes(settings.location, month, d, { qiblaDeg: qb, saffDeg: sf }),
       });
     }
     return { rows: list, qibla: qb, saff: sf };
-  }, [days, month, settings.location]);
+  }, [days, month, year, settings.location]);
+
+  const today = new Date();
+  const todayDay = today.getMonth() + 1 === month && today.getFullYear() === year ? today.getDate() : -1;
 
   return (
     <Card
-      title={`${MONTH_NAMES_EN[month - 1]} ${year}`}
-      subtitle={`Qibla ${qibla.toFixed(2)}° · Saff ${saff.toFixed(2)}°`}
+      title={`${monthLabel(lang, month - 1)} ${year}`}
+      subtitle={`${t(lang, 'qibla')}: ${qibla.toFixed(2)}° · ${t(lang, 'saffRow')}: ${saff.toFixed(2)}°`}
       padded={false}
+      delay={0.1}
     >
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full min-w-max text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900/50">
-            <tr>
-              <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                Day
-              </th>
-              <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                Qibla — Fore
-              </th>
-              <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                Qibla — After
-              </th>
-              <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                Saff — Fore
-              </th>
-              <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                Saff — After
-              </th>
-              <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                Status
-              </th>
+          <thead>
+            <tr className="border-b border-border/40 bg-accent/30">
+              {[
+                t(lang, 'day'),
+                t(lang, 'qiblaForeNoon'),
+                t(lang, 'qiblaAfterNoon'),
+                t(lang, 'saffForeNoon'),
+                t(lang, 'saffAfterNoon'),
+                t(lang, 'status'),
+              ].map((h, i) => (
+                <th
+                  key={i}
+                  className={[
+                    'px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/50 whitespace-nowrap',
+                    i === 0 ? 'sticky start-0 z-10 bg-accent/95 text-start' : 'text-end',
+                  ].join(' ')}
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.day} className="even:bg-slate-50/40 dark:even:bg-slate-900/30">
-                <td className="sticky left-0 z-10 bg-inherit px-3 py-1.5 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800/50">
-                  {r.day}
-                </td>
-                <td className="px-3 py-1.5 text-right tabular-nums text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800/50">
-                  <TimeText value={r.qiblaForeNoon} />
-                </td>
-                <td className="px-3 py-1.5 text-right tabular-nums text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800/50">
-                  <TimeText value={r.qiblaAfterNoon} />
-                </td>
-                <td className="px-3 py-1.5 text-right tabular-nums text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800/50">
-                  <TimeText value={r.saffForeNoon} />
-                </td>
-                <td className="px-3 py-1.5 text-right tabular-nums text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800/50">
-                  <TimeText value={r.saffAfterNoon} />
-                </td>
-                <td className="px-3 py-1.5 text-right border-b border-slate-100 dark:border-slate-800/50">
-                  <Badge tone={r.status === 'QNOS' ? 'emerald' : r.status === 'QSOS' ? 'amber' : 'neutral'}>
-                    {r.status}
-                  </Badge>
-                </td>
-              </tr>
-            ))}
+            {rows.map((r, i) => {
+              const isToday = r.day === todayDay;
+              return (
+                <motion.tr
+                  key={r.day}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.12, delay: i * 0.008 }}
+                  className={[
+                    'border-b border-border/25 transition-colors hover:bg-accent/30',
+                    isToday ? 'bg-primary/8' : i % 2 === 1 ? 'bg-accent/15' : '',
+                  ].join(' ')}
+                >
+                  <td className="sticky start-0 z-10 bg-inherit px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      {isToday && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      <span className={['font-bold tabular-nums', isToday ? 'text-primary' : 'text-foreground'].join(' ')}>
+                        {r.day}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2.5 text-end font-medium tabular-nums text-foreground/80"><TimeText value={r.qiblaForeNoon} /></td>
+                  <td className="px-4 py-2.5 text-end font-medium tabular-nums text-foreground/80"><TimeText value={r.qiblaAfterNoon} /></td>
+                  <td className="px-4 py-2.5 text-end font-medium tabular-nums text-foreground/80"><TimeText value={r.saffForeNoon} /></td>
+                  <td className="px-4 py-2.5 text-end font-medium tabular-nums text-foreground/80"><TimeText value={r.saffAfterNoon} /></td>
+                  <td className="px-4 py-2.5 text-end">
+                    <Badge tone={r.status === 'QNOS' ? 'emerald' : r.status === 'QSOS' ? 'amber' : 'neutral'}>
+                      {r.status}
+                    </Badge>
+                  </td>
+                </motion.tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

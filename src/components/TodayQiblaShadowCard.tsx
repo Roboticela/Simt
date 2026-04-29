@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Sun } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { useAppSettings } from '../context/SettingsContext';
@@ -6,9 +8,12 @@ import { useNow } from '../hooks/useNow';
 import { qiblaBearing, saffBearing } from '../lib/qibla';
 import { computeQiblaShadowTimes } from '../lib/qiblaShadow';
 import { TimeText } from './TimeText';
+import { useLang } from '../contexts/LanguageContext';
+import { t } from '../lib/i18n';
 
 export function TodayQiblaShadowCard() {
   const { settings } = useAppSettings();
+  const { lang } = useLang();
   const now = useNow(60_000);
   const month = now.getMonth() + 1;
   const day = now.getDate();
@@ -16,38 +21,44 @@ export function TodayQiblaShadowCard() {
   const { shadow, status } = useMemo(() => {
     const qb = qiblaBearing(settings.location);
     const sf = saffBearing(qb);
-    const sh = computeQiblaShadowTimes(settings.location, month, day, {
-      qiblaDeg: qb,
-      saffDeg: sf,
-    });
+    const sh = computeQiblaShadowTimes(settings.location, month, day, { qiblaDeg: qb, saffDeg: sf });
     return { shadow: sh, status: sh.status };
   }, [settings.location, month, day]);
 
   return (
     <Card
-      title="Qibla Shadow Times Today"
-      subtitle="Times when a vertical shadow falls along Qibla / Saff direction"
-      action={<Badge tone={status === 'QNOS' ? 'emerald' : status === 'QSOS' ? 'amber' : 'neutral'}>{status}</Badge>}
+      title={t(lang, 'qiblaShadow')}
+      subtitle={t(lang, 'shadowExplain').slice(0, 60) + '…'}
+      action={
+        <Badge tone={status === 'QNOS' ? 'emerald' : status === 'QSOS' ? 'amber' : 'neutral'}>
+          {status}
+        </Badge>
+      }
+      delay={0.15}
     >
-      <div className="grid grid-cols-2 gap-3">
-        <Cell title="Qibla — Fore-noon" value={shadow.qiblaForeNoon} />
-        <Cell title="Qibla — After-noon" value={shadow.qiblaAfterNoon} />
-        <Cell title="Saff — Fore-noon" value={shadow.saffForeNoon} />
-        <Cell title="Saff — After-noon" value={shadow.saffAfterNoon} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ShadowCell label={t(lang, 'qiblaForeNoon')} value={shadow.qiblaForeNoon} />
+        <ShadowCell label={t(lang, 'qiblaAfterNoon')} value={shadow.qiblaAfterNoon} />
+        <ShadowCell label={t(lang, 'saffForeNoon')} value={shadow.saffForeNoon} />
+        <ShadowCell label={t(lang, 'saffAfterNoon')} value={shadow.saffAfterNoon} />
       </div>
     </Card>
   );
 }
 
-function Cell({ title, value }: { title: string; value: number | null }) {
+function ShadowCell({ label, value }: { label: string; value: number | null }) {
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        {title}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="rounded-2xl border border-border/50 bg-accent/30 p-4"
+    >
+      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-foreground/45">
+        <Sun className="h-3 w-3" />
+        {label}
       </p>
-      <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+      <p className="mt-2 text-2xl font-black tabular-nums text-foreground">
         <TimeText value={value} />
       </p>
-    </div>
+    </motion.div>
   );
 }

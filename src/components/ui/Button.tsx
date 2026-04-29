@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -9,45 +10,51 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   block?: boolean;
   leading?: ReactNode;
   trailing?: ReactNode;
+  animated?: boolean;
 }
 
 const VARIANT: Record<Variant, string> = {
   primary:
-    'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-emerald-300 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:disabled:bg-emerald-900',
+    'bg-primary text-primary-foreground hover:opacity-90 active:opacity-80',
   secondary:
-    'bg-slate-200 text-slate-900 hover:bg-slate-300 active:bg-slate-400 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:active:bg-slate-600',
+    'bg-accent text-foreground hover:bg-border active:opacity-80',
   ghost:
-    'bg-transparent text-slate-700 hover:bg-slate-100 active:bg-slate-200 dark:text-slate-200 dark:hover:bg-slate-800 dark:active:bg-slate-700',
+    'bg-transparent text-foreground/70 hover:bg-accent hover:text-foreground',
   outline:
-    'bg-transparent border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800',
+    'border border-border/70 bg-card/60 text-foreground/70 hover:bg-accent hover:text-foreground',
   danger:
-    'bg-rose-600 text-white hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-400',
+    'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
 };
 
 const SIZE: Record<Size, string> = {
   sm: 'h-8 px-3 text-xs gap-1.5',
   md: 'h-10 px-4 text-sm gap-2',
-  lg: 'h-12 px-5 text-base gap-2',
+  lg: 'h-12 px-5 text-base gap-2.5',
 };
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  block,
-  leading,
-  trailing,
-  className,
-  children,
-  ...rest
-}: ButtonProps) {
-  return (
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    variant = 'primary',
+    size = 'md',
+    block,
+    leading,
+    trailing,
+    animated = true,
+    className,
+    children,
+    ...rest
+  },
+  ref,
+) {
+  const base = (
     <button
+      ref={ref}
       type="button"
       {...rest}
       className={[
-        'inline-flex items-center justify-center font-medium rounded-md transition-colors',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60',
-        'disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center rounded-2xl font-semibold transition-all',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         VARIANT[variant],
         SIZE[size],
         block ? 'w-full' : '',
@@ -59,4 +66,16 @@ export function Button({
       {trailing}
     </button>
   );
-}
+
+  if (!animated) return base;
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      className={block ? 'w-full' : 'inline-flex'}
+    >
+      {base}
+    </motion.div>
+  );
+});

@@ -1,20 +1,205 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+/* ─── prevent horizontal overflow during page transitions ─── */
+html, body, #root {
+  overflow-x: hidden;
+}
+#root { min-width: 0; }
+
+/* ─── Light (default) ─── */
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --accent: #f1f5f9;
+  --primary: #4FACFE;
+  --primary-foreground: #ffffff;
+  --tertiary: #00F2FE;
+  --muted: #64748b;
+  --font-inter: 'Inter', sans-serif;
+}
+
+[data-theme="light"] {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --accent: #f1f5f9;
+  --primary: #4FACFE;
+  --primary-foreground: #ffffff;
+  --tertiary: #00F2FE;
+  --muted: #64748b;
+}
+
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #1a1a1a;
+  --border: #2a2a2a;
+  --accent: #2a2a2a;
+  --primary: #4FACFE;
+  --primary-foreground: #0a0a0a;
+  --tertiary: #00F2FE;
+  --muted: #9ca3af;
+}
+
+[data-theme="navy"] {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --card: #1e293b;
+  --border: #334155;
+  --accent: #334155;
+  --primary: #60a5fa;
+  --primary-foreground: #0f172a;
+  --tertiary: #3b82f6;
+  --muted: #94a3b8;
+}
+
+[data-theme="sunset"] {
+  --background: #7c2d12;
+  --foreground: #fff7ed;
+  --card: #9a3412;
+  --border: #c2410c;
+  --accent: #c2410c;
+  --primary: #fb923c;
+  --primary-foreground: #7c2d12;
+  --tertiary: #ea580c;
+  --muted: #fed7aa;
+}
+
+[data-theme="ocean"] {
+  --background: #164e63;
+  --foreground: #e0f2fe;
+  --card: #155e75;
+  --border: #0891b2;
+  --accent: #0891b2;
+  --primary: #22d3ee;
+  --primary-foreground: #164e63;
+  --tertiary: #06b6d4;
+  --muted: #a5f3fc;
+}
+
+[data-theme="forest"] {
+  --background: #14532d;
+  --foreground: #f0fdf4;
+  --card: #166534;
+  --border: #15803d;
+  --accent: #15803d;
+  --primary: #4ade80;
+  --primary-foreground: #14532d;
+  --tertiary: #22c55e;
+  --muted: #bbf7d0;
+}
+
+[data-theme="purple"] {
+  --background: #581c87;
+  --foreground: #faf5ff;
+  --card: #6b21a8;
+  --border: #7c3aed;
+  --accent: #7c3aed;
+  --primary: #c084fc;
+  --primary-foreground: #581c87;
+  --tertiary: #a855f7;
+  --muted: #e9d5ff;
+}
+
+[data-theme="midnight"] {
+  --background: #1e1b4b;
+  --foreground: #e0e7ff;
+  --card: #312e81;
+  --border: #4338ca;
+  --accent: #4338ca;
+  --primary: #818cf8;
+  --primary-foreground: #1e1b4b;
+  --tertiary: #6366f1;
+  --muted: #c7d2fe;
+}
+
+/* ─── Expose CSS vars as Tailwind utilities ─── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-tertiary: var(--tertiary);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-inter);
+}
+
+/* ─── Tailwind dark: support for dark themes ─── */
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+/* ─── Global reset ─── */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
-html, body, #root {
-  height: 100%;
+html::-webkit-scrollbar { width: 8px; height: 8px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  border: 2px solid var(--background);
+  background-clip: padding-box;
 }
+html::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 body {
   margin: 0;
-  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* ─── Safe area ─── */
+:root {
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+}
+
+.pb-safe {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ─── Custom scrollbar for scrollable panels ─── */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+/* ─── RTL support ─── */
+[dir="rtl"] .flip-rtl { transform: scaleX(-1); }
+
+/* ─── Smooth theme transitions on key elements ─── */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+/* Opt-out for layout / transform transitions so they aren't slowed down */
+.no-theme-transition,
+.no-theme-transition * {
+  transition-property: none !important;
 }

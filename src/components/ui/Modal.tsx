@@ -1,4 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   open: boolean;
@@ -8,56 +10,61 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const SIZE = {
-  sm: 'max-w-md',
-  md: 'max-w-2xl',
-  lg: 'max-w-4xl',
-};
+const SIZE = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl' };
 
 export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
     document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', handler);
       document.body.style.overflow = '';
     };
   }, [open, onClose]);
 
-  if (!open) return null;
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 p-0 sm:p-4"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className={[
-          'w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800',
-          'rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col',
-          SIZE[size],
-        ].join(' ')}
-      >
-        {title && (
-          <header className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="h-8 w-8 inline-flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              ×
-            </button>
-          </header>
-        )}
-        <div className="overflow-y-auto p-4">{children}</div>
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <motion.div
+            key="modal-panel"
+            initial={{ opacity: 0, y: 40, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+            className={[
+              'flex max-h-[90vh] w-full flex-col border border-border/60 bg-card',
+              'rounded-t-3xl sm:rounded-3xl',
+              SIZE[size],
+            ].join(' ')}
+          >
+            {title && (
+              <header className="flex items-center justify-between gap-3 border-b border-border/50 px-5 py-4">
+                <h2 className="text-base font-bold text-foreground">{title}</h2>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Close"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-2xl text-foreground/50 hover:bg-accent hover:text-foreground transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </header>
+            )}
+            <div className="overflow-y-auto custom-scrollbar p-5">{children}</div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
