@@ -90,17 +90,24 @@ export function computePrayerTimes(
   const hAsrShafi = hourAngleForAltitude(asrShafiAlt, lat, dsun);
   const hAsrHanafi = hourAngleForAltitude(asrHanafiAlt, lat, dsun);
 
-  // Customary noon = midpoint of sunrise & sunset (used in workbook).
   const sunrise = hRise == null ? null : noon - hRise / 15;
-  const sunset = hRise == null ? null : noon + hRise / 15;
+  const sunset  = hRise == null ? null : noon + hRise / 15;
+  const fajr    = hFajr == null ? null : noon - hFajr / 15;
+
+  // Customary noon (نصف النہار عرفی) = midpoint of astronomical sunrise & sunset
+  // = (sunrise + sunset) / 2 = noon.  Stored separately for display completeness.
   const customaryNoon = sunrise != null && sunset != null ? (sunrise + sunset) / 2 : null;
 
+  // Legal noon (نصف النہار شرعی) = midpoint of true dawn (Fajr) and sunset.
+  // This is earlier than solar noon because Fajr precedes astronomical sunrise.
+  const legalNoon = fajr != null && sunset != null ? (fajr + sunset) / 2 : noon;
+
   return {
-    fajr: hFajr == null ? null : noon - hFajr / 15,
-    suhoorEnd: hFajr == null ? null : noon - hFajr / 15,
+    fajr,
+    suhoorEnd: fajr,
     sunrise,
     ishraq: hIshraq == null ? null : noon - hIshraq / 15,
-    legalNoon: noon,
+    legalNoon,
     customaryNoon,
     zuhr: noon,
     asrShafi: hAsrShafi == null ? null : noon + hAsrShafi / 15,

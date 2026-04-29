@@ -99,33 +99,58 @@ export function computeQiblaShadowTimes(
   }
 
   const sunriseLha = -hRise; // negative (morning)
-  const sunsetLha = hRise; // positive (afternoon)
+  const sunsetLha = hRise;   // positive (afternoon)
 
-  function findLha(target: number): { fore: number | null; after: number | null } {
-    const f = (lha: number) => normalizeAzimuthDelta(sunAzimuthAtLha(lha, lat, dsun), target);
-    // Guard: just-after-sunrise & just-before-sunset to avoid divide-by-zero at horizon.
-    const eps = 0.05;
-    const fore = bisect(f, sunriseLha + eps, -eps);
-    const after = bisect(f, eps, sunsetLha - eps);
-    return { fore, after };
+  /**
+   * Split a compass bearing into the correct search targets for fore-noon and
+   * after-noon bisection.
+   *
+   * The sun's azimuth arc is symmetric about solar noon: if the sun is at
+   * azimuth A in the afternoon (LHA > 0) it was at (360° − A) in the
+   * symmetric morning slot (LHA < 0). Therefore:
+   *   • bearings < 180° are crossed before noon → fore target = bearing itself
+   *   • bearings > 180° are crossed after  noon → after target = bearing itself
+   * The opposite half uses the complement (360° − bearing).
+   */
+  function splitTargets(bearing: number): [fore: number, after: number] {
+    const comp = ((360 - bearing) % 360 + 360) % 360;
+    return bearing < 180 ? [bearing, comp] : [comp, bearing];
   }
 
-  const qibla = findLha(options.qiblaDeg);
-  const saff = findLha(options.saffDeg);
+  function findLha(foreTarget: number, afterTarget: number): { fore: number | null; after: number | null } {
+    // Guard: just-after-sunrise & just-before-sunset to avoid divide-by-zero at horizon.
+    const eps = 0.05;
+    const makeFn = (tgt: number) => (lha: number) =>
+      normalizeAzimuthDelta(sunAzimuthAtLha(lha, lat, dsun), tgt);
+    return {
+      fore: bisect(makeFn(foreTarget),  sunriseLha + eps, -eps),
+      after: bisect(makeFn(afterTarget), eps, sunsetLha - eps),
+    };
+  }
 
-  const sunAzAtSunrise = sunAzimuthAtLha(sunriseLha + 0.05, lat, dsun);
+  const [qiblaFore, qiblaAfter] = splitTargets(options.qiblaDeg);
+  const [saffFore,  saffAfter]  = splitTargets(options.saffDeg);
+
+  const qibla = findLha(qiblaFore, qiblaAfter);
+  const saff  = findLha(saffFore,  saffAfter);
+
+  /**
+   * Status: QNOS (Qibla North Of Sun) when the fore-noon shadow points roughly
+   * toward Qibla. This occurs when Qibla is in the western half of the compass
+   * (bearing ≥ 180°). For eastern Qibla the fore-noon shadow points away → QSOS.
+   */
   const status: QiblaShadowTimes['status'] =
     qibla.fore == null && qibla.after == null
       ? 'N/A'
-      : options.qiblaDeg > sunAzAtSunrise
+      : options.qiblaDeg >= 180
         ? 'QNOS'
         : 'QSOS';
 
   return {
-    qiblaForeNoon: qibla.fore == null ? null : noon + qibla.fore / 15,
+    qiblaForeNoon:  qibla.fore  == null ? null : noon + qibla.fore  / 15,
     qiblaAfterNoon: qibla.after == null ? null : noon + qibla.after / 15,
-    saffForeNoon: saff.fore == null ? null : noon + saff.fore / 15,
-    saffAfterNoon: saff.after == null ? null : noon + saff.after / 15,
+    saffForeNoon:   saff.fore   == null ? null : noon + saff.fore   / 15,
+    saffAfterNoon:  saff.after  == null ? null : noon + saff.after  / 15,
     status,
   };
 }

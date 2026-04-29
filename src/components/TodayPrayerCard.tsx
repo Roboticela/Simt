@@ -65,7 +65,7 @@ const GROUPS: ScheduleGroup[] = [
   },
 ];
 
-const NEXT_ORDER: PrayerKey[] = ['fajr', 'sunrise', 'zuhr', 'asrShafi', 'asrHanafi', 'maghrib', 'isha'];
+const NEXT_ORDER: PrayerKey[] = ['fajr', 'sunrise', 'ishraq', 'zuhr', 'asrShafi', 'asrHanafi', 'maghrib', 'isha'];
 
 export function TodayPrayerCard() {
   const { settings, method } = useAppSettings();

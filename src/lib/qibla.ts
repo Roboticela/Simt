@@ -25,10 +25,12 @@ export function qiblaBearing(observer: Coordinates): number {
 
 /**
  * Saff (prayer-row) bearing — perpendicular to the Qibla direction.
- * Matches the workbook rule: CSF = CQA ± 90 selected so |CQA - CSF| = 90.
+ * Workbook rule (Sheet A constants): CSF = CQA − 90 when CQA > 90°,
+ * CSF = CQA + 90 when CQA < 90°.  For Pakistan locations (CQA ≈ 254°)
+ * this gives CSF ≈ 164° (SSE), not 344° (NNW).
  */
 export function saffBearing(qiblaDeg: number): number {
-  return ((qiblaDeg + 90) % 360 + 360) % 360;
+  return ((qiblaDeg - 90) % 360 + 360) % 360;
 }
 
 /**
