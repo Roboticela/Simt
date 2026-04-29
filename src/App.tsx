@@ -3,6 +3,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { Layout } from './components/Layout';
+import { PrayerNotificationsManager } from './components/PrayerNotificationsManager';
 import { HomePage } from './pages/HomePage';
 import { PrayerCalendarPage } from './pages/PrayerCalendarPage';
 import { QiblaPage } from './pages/QiblaPage';
@@ -14,6 +15,7 @@ function App() {
     <ThemeProvider>
       <LanguageProvider>
         <SettingsProvider>
+          <PrayerNotificationsManager />
           <BrowserRouter>
             <Layout>
               <Routes>
