@@ -1,0 +1,15 @@
+# Frontend (nginx) only. Set VITE_API_URL in Dokploy's "Environment Variables" tab.
+# Run from repo root: docker compose -f docker-compose.frontend.yml up -d
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # VITE_API_URL must be set as a runtime env var — the entrypoint injects it
+    # into the pre-built static assets when the container starts.
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "80:80"
+    restart: unless-stopped
