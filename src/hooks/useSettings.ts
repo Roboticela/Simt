@@ -70,7 +70,8 @@ function readInitial(): AppSettings {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULTS;
     const parsed = JSON.parse(raw) as Partial<AppSettings>;
-    const parsedRules = parsed.prayerNotifications ?? {};
+    const parsedRules: Partial<PrayerNotificationRules> =
+      parsed.prayerNotifications ?? {};
     return {
       ...DEFAULTS,
       ...parsed,
