@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
-import worldRaw from '../data/world_cities.json';
 import pakRaw from '../data/pakistan_locations.json';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -10,9 +9,13 @@ import type { LocationConfig } from '../lib/types';
 import { useLang } from '../contexts/LanguageContext';
 import { t } from '../lib/i18n';
 
-interface RawCity { name: string; lat: number; lng: number; id?: number; }
+interface RawCity {
+  name: string;
+  lat: number;
+  lng: number;
+  id?: number;
+}
 
-const WORLD: RawCity[] = (worldRaw as RawCity[]).slice().sort((a, b) => a.name.localeCompare(b.name));
 const PAK: RawCity[] = (pakRaw as RawCity[]).slice().sort((a, b) => a.name.localeCompare(b.name));
 
 interface Props {
@@ -22,11 +25,11 @@ interface Props {
   current: LocationConfig;
 }
 
-type TabId = 'world' | 'pakistan' | 'custom';
+type TabId = 'pakistan' | 'custom';
 
 export function LocationPicker({ open, onClose, onSelect, current }: Props) {
   const { lang } = useLang();
-  const [tab, setTab] = useState<TabId>('world');
+  const [tab, setTab] = useState<TabId>('pakistan');
   const [query, setQuery] = useState('');
   const [custom, setCustom] = useState({
     name: current.name,
@@ -35,22 +38,14 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
     timezone: String(current.timezone),
   });
 
-  const list = tab === 'world' ? WORLD : PAK;
-
   const filtered = useMemo(() => {
-    if (!query.trim()) return list.slice(0, 200);
+    if (!query.trim()) return PAK.slice(0, 200);
     const q = query.trim().toLowerCase();
-    return list.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 200);
-  }, [list, query]);
+    return PAK.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 200);
+  }, [query]);
 
   function pickCity(c: RawCity) {
-    // Pakistan locations are always UTC+5 (PKT).
-    // For world cities the data carries no timezone field, so we derive the
-    // nearest whole-hour UTC offset from longitude (±15° per hour).
-    // This is accurate for most standard-offset zones; users can fine-tune
-    // via the Custom tab for half-hour / quarter-hour zones (e.g. India UTC+5:30).
-    const timezone = tab === 'pakistan' ? 5 : Math.round(c.lng / 15);
-    onSelect({ name: c.name, lat: c.lat, lng: c.lng, timezone });
+    onSelect({ name: c.name, lat: c.lat, lng: c.lng, timezone: 5 });
     onClose();
   }
 
@@ -61,7 +56,9 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
     if (Number.isNaN(lat) || Number.isNaN(lng) || Number.isNaN(tz)) return;
     onSelect({
       name: custom.name.trim() || `${lat.toFixed(2)}, ${lng.toFixed(2)}`,
-      lat, lng, timezone: tz,
+      lat,
+      lng,
+      timezone: tz,
     });
     onClose();
   }
@@ -74,13 +71,12 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
           value={tab}
           onChange={setTab}
           items={[
-            { id: 'world',    label: t(lang, 'world') },
             { id: 'pakistan', label: t(lang, 'pakistan') },
-            { id: 'custom',   label: t(lang, 'custom') },
+            { id: 'custom', label: t(lang, 'custom') },
           ]}
         />
 
-        {tab !== 'custom' && (
+        {tab === 'pakistan' && (
           <>
             <Input
               type="search"
@@ -117,10 +113,27 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
 
         {tab === 'custom' && (
           <div className="space-y-3">
-            <Input label={t(lang, 'placeName')} value={custom.name} onChange={(e) => setCustom({ ...custom, name: e.target.value })} placeholder="e.g. My Town" />
+            <Input
+              label={t(lang, 'placeName')}
+              value={custom.name}
+              onChange={(e) => setCustom({ ...custom, name: e.target.value })}
+              placeholder="e.g. My Town"
+            />
             <div className="grid grid-cols-2 gap-3">
-              <Input label={t(lang, 'latitude')} type="number" step="0.0001" value={custom.lat} onChange={(e) => setCustom({ ...custom, lat: e.target.value })} />
-              <Input label={t(lang, 'longitude')} type="number" step="0.0001" value={custom.lng} onChange={(e) => setCustom({ ...custom, lng: e.target.value })} />
+              <Input
+                label={t(lang, 'latitude')}
+                type="number"
+                step="0.0001"
+                value={custom.lat}
+                onChange={(e) => setCustom({ ...custom, lat: e.target.value })}
+              />
+              <Input
+                label={t(lang, 'longitude')}
+                type="number"
+                step="0.0001"
+                value={custom.lng}
+                onChange={(e) => setCustom({ ...custom, lng: e.target.value })}
+              />
             </div>
             <Input
               label={t(lang, 'timezone')}
@@ -131,7 +144,9 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
               hint={t(lang, 'timezoneHint')}
             />
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={onClose}>{t(lang, 'cancel')}</Button>
+              <Button variant="ghost" onClick={onClose}>
+                {t(lang, 'cancel')}
+              </Button>
               <Button onClick={applyCustom}>{t(lang, 'apply')}</Button>
             </div>
           </div>
