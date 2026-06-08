@@ -9,6 +9,7 @@ import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { useLang } from '../contexts/LanguageContext';
 import { t, monthLabel } from '../lib/i18n';
+import { stickyTableDayCell, stickyTableDayHeader } from '../lib/utils';
 
 interface Props { month: number; year?: number; }
 
@@ -56,7 +57,7 @@ export function QiblaShadowMonthTable({ month, year = new Date().getFullYear() }
                   key={i}
                   className={[
                     'px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/50 whitespace-nowrap',
-                    i === 0 ? 'sticky start-0 z-10 bg-accent/95 text-start' : 'text-end',
+                    i === 0 ? stickyTableDayHeader('text-start') : 'text-end',
                   ].join(' ')}
                 >
                   {h}
@@ -74,11 +75,11 @@ export function QiblaShadowMonthTable({ month, year = new Date().getFullYear() }
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.12, delay: i * 0.008 }}
                   className={[
-                    'border-b border-border/25 transition-colors hover:bg-accent/30',
+                    'group border-b border-border/25 transition-colors hover:bg-accent/30',
                     isToday ? 'bg-primary/8' : i % 2 === 1 ? 'bg-accent/15' : '',
                   ].join(' ')}
                 >
-                  <td className="sticky start-0 z-10 bg-inherit px-4 py-2.5">
+                  <td className={stickyTableDayCell(isToday, i % 2 === 1, 'px-4 py-2.5')}>
                     <div className="flex items-center gap-2">
                       {isToday && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                       <span className={['font-bold tabular-nums', isToday ? 'text-primary' : 'text-foreground'].join(' ')}>

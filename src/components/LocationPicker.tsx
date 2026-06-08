@@ -1,13 +1,18 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
 import pakRaw from '../data/pakistan_locations.json';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Modal } from './ui/Modal';
 import { Tabs } from './ui/Tabs';
+import { LoadingPanel } from './ui/Loader';
 import type { LocationConfig } from '../lib/types';
 import { useLang } from '../contexts/LanguageContext';
 import { t } from '../lib/i18n';
+
+const WorldLocationPicker = lazy(() =>
+  import('./WorldLocationPicker').then((m) => ({ default: m.WorldLocationPicker })),
+);
 
 interface RawCity {
   name: string;
@@ -25,7 +30,7 @@ interface Props {
   current: LocationConfig;
 }
 
-type TabId = 'pakistan' | 'custom';
+type TabId = 'world' | 'pakistan' | 'custom';
 
 export function LocationPicker({ open, onClose, onSelect, current }: Props) {
   const { lang } = useLang();
@@ -38,13 +43,13 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
     timezone: String(current.timezone),
   });
 
-  const filtered = useMemo(() => {
+  const filteredPak = useMemo(() => {
     if (!query.trim()) return PAK.slice(0, 200);
     const q = query.trim().toLowerCase();
     return PAK.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 200);
   }, [query]);
 
-  function pickCity(c: RawCity) {
+  function pickPakCity(c: RawCity) {
     onSelect({ name: c.name, lat: c.lat, lng: c.lng, timezone: 5 });
     onClose();
   }
@@ -64,17 +69,37 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={t(lang, 'chooseLocation')} size="md">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={t(lang, 'chooseLocation')}
+      size={tab === 'world' ? 'xl' : 'md'}
+      flushBody={tab === 'world'}
+    >
       <div className="space-y-4">
         <Tabs<TabId>
           fullWidth
           value={tab}
           onChange={setTab}
           items={[
+            { id: 'world', label: t(lang, 'world') },
             { id: 'pakistan', label: t(lang, 'pakistan') },
             { id: 'custom', label: t(lang, 'custom') },
           ]}
         />
+
+        {tab === 'world' && (
+          <Suspense
+            fallback={
+              <LoadingPanel
+                label={t(lang, 'loadingLocations')}
+                sublabel={t(lang, 'loading')}
+              />
+            }
+          >
+            <WorldLocationPicker key={open ? 'open' : 'closed'} onSelect={onSelect} onClose={onClose} />
+          </Suspense>
+        )}
 
         {tab === 'pakistan' && (
           <>
@@ -87,14 +112,14 @@ export function LocationPicker({ open, onClose, onSelect, current }: Props) {
               autoFocus
             />
             <ul className="-mx-5 max-h-[55vh] divide-y divide-border/40 overflow-y-auto custom-scrollbar">
-              {filtered.length === 0 && (
+              {filteredPak.length === 0 && (
                 <li className="px-5 py-4 text-sm text-foreground/50">{t(lang, 'noMatches')}</li>
               )}
-              {filtered.map((c) => (
+              {filteredPak.map((c) => (
                 <li key={`${c.name}-${c.lat}-${c.lng}`}>
                   <button
                     type="button"
-                    onClick={() => pickCity(c)}
+                    onClick={() => pickPakCity(c)}
                     className="flex w-full items-center justify-between gap-3 px-5 py-3 text-sm transition-colors hover:bg-accent/50"
                   >
                     <span className="flex items-center gap-2.5 font-semibold text-foreground truncate">

@@ -7,12 +7,21 @@ interface ModalProps {
   onClose: () => void;
   title?: ReactNode;
   children: ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Remove body padding (e.g. full-bleed map layouts). */
+  flushBody?: boolean;
 }
 
-const SIZE = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl' };
+const SIZE = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl', xl: 'max-w-5xl' };
 
-export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  flushBody = false,
+}: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -61,7 +70,14 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
                 </button>
               </header>
             )}
-            <div className="overflow-y-auto custom-scrollbar p-5">{children}</div>
+            <div
+              className={[
+                'overflow-y-auto custom-scrollbar',
+                flushBody ? 'p-0' : 'p-5',
+              ].join(' ')}
+            >
+              {children}
+            </div>
           </motion.div>
         </motion.div>
       )}

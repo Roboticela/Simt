@@ -203,3 +203,29 @@ body {
 .no-theme-transition * {
   transition-property: none !important;
 }
+
+/* ─── Loader skeleton shimmer ─── */
+@keyframes loader-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.loader-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 80%, transparent) 0%,
+    color-mix(in srgb, var(--border) 90%, var(--primary) 10%) 45%,
+    color-mix(in srgb, var(--accent) 80%, transparent) 90%
+  );
+  background-size: 200% 100%;
+  animation: loader-shimmer 1.35s ease-in-out infinite;
+}
+
+@layer base {
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+  }
+  .maplibregl-popup-tip {
+    @apply hidden!;
+  }
+}

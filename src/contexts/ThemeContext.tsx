@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import type { Lang } from '../lib/i18n';
 
 export type ThemeName =
   | 'light'
@@ -15,20 +16,28 @@ export interface ThemeMeta {
   label: string;
   labelAr: string;
   labelUr: string;
+  labelHi: string;
   swatch: string;
   isDark: boolean;
 }
 
 export const THEMES: ThemeMeta[] = [
-  { name: 'light',    label: 'Light',        labelAr: 'فاتح',        labelUr: 'روشن',       swatch: 'bg-sky-300',    isDark: false },
-  { name: 'dark',     label: 'Dark',         labelAr: 'داكن',        labelUr: 'گہرا',       swatch: 'bg-sky-400',    isDark: true  },
-  { name: 'navy',     label: 'Navy',         labelAr: 'كحلي',        labelUr: 'نیوی',       swatch: 'bg-blue-900',   isDark: true  },
-  { name: 'sunset',   label: 'Sunset',       labelAr: 'غروب',        labelUr: 'غروب',       swatch: 'bg-orange-600', isDark: true  },
-  { name: 'ocean',    label: 'Ocean',        labelAr: 'محيطي',       labelUr: 'سمندر',      swatch: 'bg-cyan-600',   isDark: true  },
-  { name: 'forest',   label: 'Forest',       labelAr: 'غابة',        labelUr: 'جنگل',       swatch: 'bg-green-800',  isDark: true  },
-  { name: 'purple',   label: 'Purple Dream', labelAr: 'حلم أرجواني', labelUr: 'بنفشی خواب', swatch: 'bg-purple-700', isDark: true  },
-  { name: 'midnight', label: 'Midnight',     labelAr: 'منتصف الليل', labelUr: 'آدھی رات',   swatch: 'bg-indigo-900', isDark: true  },
+  { name: 'light',    label: 'Light',        labelAr: 'فاتح',        labelUr: 'روشن',       labelHi: 'हल्का',         swatch: 'bg-white',      isDark: false },
+  { name: 'dark',     label: 'Dark',         labelAr: 'داكن',        labelUr: 'گہرا',       labelHi: 'गहरा',          swatch: 'bg-black',      isDark: true  },
+  { name: 'navy',     label: 'Navy',         labelAr: 'كحلي',        labelUr: 'نیوی',       labelHi: 'नेवी',          swatch: 'bg-blue-900',   isDark: true  },
+  { name: 'sunset',   label: 'Sunset',       labelAr: 'غروب',        labelUr: 'غروب',       labelHi: 'सूर्यास्त',     swatch: 'bg-orange-600', isDark: true  },
+  { name: 'ocean',    label: 'Ocean',        labelAr: 'محيطي',       labelUr: 'سمندر',      labelHi: 'समुद्र',        swatch: 'bg-cyan-600',   isDark: true  },
+  { name: 'forest',   label: 'Forest',       labelAr: 'غابة',        labelUr: 'جنگل',       labelHi: 'वन',            swatch: 'bg-green-800',  isDark: true  },
+  { name: 'purple',   label: 'Purple Dream', labelAr: 'حلم أرجواني', labelUr: 'بنفشی خواب', labelHi: 'बैंगनी सपना',   swatch: 'bg-purple-700', isDark: true  },
+  { name: 'midnight', label: 'Midnight',     labelAr: 'منتصف الليل', labelUr: 'آدھی رات',   labelHi: 'आधी रात',       swatch: 'bg-indigo-900', isDark: true  },
 ];
+
+export function themeLabel(lang: Lang, th: ThemeMeta): string {
+  if (lang === 'ar') return th.labelAr;
+  if (lang === 'ur') return th.labelUr;
+  if (lang === 'hi') return th.labelHi;
+  return th.label;
+}
 
 const STORAGE_KEY = 'simt.theme.v2';
 

@@ -4,7 +4,7 @@
  */
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
-import { useThemeCtx, THEMES } from '../contexts/ThemeContext';
+import { useThemeCtx, THEMES, themeLabel } from '../contexts/ThemeContext';
 import { useLang } from '../contexts/LanguageContext';
 
 export function ThemeToggle() {
@@ -32,7 +32,7 @@ export function ThemeToggle() {
         >
           <span className={['h-4 w-4 shrink-0 rounded-full', th.swatch].join(' ')} />
           <span className="truncate">
-            {lang === 'ar' ? th.labelAr : lang === 'ur' ? th.labelUr : th.label}
+            {themeLabel(lang, th)}
           </span>
           {theme === th.name && <Check className="ms-auto h-3 w-3 shrink-0 text-primary" />}
         </motion.button>

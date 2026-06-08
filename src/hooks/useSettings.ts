@@ -18,8 +18,8 @@ export interface AppSettings {
   location: LocationConfig;
   methodId: string;
   asrSchool: 1 | 2;
-  /** Display language: 'en' | 'ar' | 'ur'. */
-  language: 'en' | 'ar' | 'ur';
+  /** Display language: 'en' | 'ar' | 'ur' | 'hi'. */
+  language: 'en' | 'ar' | 'ur' | 'hi';
   /** Time format: '12' | '24'. */
   timeFormat: '12' | '24';
   /** Show seconds in time strings. */

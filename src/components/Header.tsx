@@ -1,16 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { useDismissOnOutsideClick } from '../hooks/useDismissOnOutsideClick';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home, Calendar, Sun, Navigation2, Settings,
-  MapPin, ChevronDown, Check, Globe, Palette,
+  ChevronDown, Check, Globe, Palette,
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useThemeCtx, THEMES } from '../contexts/ThemeContext';
 import { useLang } from '../contexts/LanguageContext';
-import { useAppSettings } from '../context/SettingsContext';
 import { t } from '../lib/i18n';
 import type { Lang } from '../lib/i18n';
+import { themeLabel } from '../contexts/ThemeContext';
+import { MoreMenu } from './MoreMenu';
 
 interface NavItem {
   to: string;
@@ -31,16 +33,20 @@ const LANG_OPTIONS: { id: Lang; code: string; labelKey: string }[] = [
   { id: 'en', code: 'EN', labelKey: 'english' },
   { id: 'ar', code: 'AR', labelKey: 'arabic'  },
   { id: 'ur', code: 'UR', labelKey: 'urdu'    },
+  { id: 'hi', code: 'HI', labelKey: 'hindi'   },
 ];
 
 export function Header() {
-  const { settings } = useAppSettings();
   const { lang, setLang } = useLang();
   const { theme, setTheme } = useThemeCtx();
   const [themeOpen, setThemeOpen] = useState(false);
   const [langOpen, setLangOpen]   = useState(false);
 
+  const closeLang = useCallback(() => setLangOpen(false), []);
+  const closeTheme = useCallback(() => setThemeOpen(false), []);
+
   const currentThemeMeta = THEMES.find((th) => th.name === theme)!;
+  const currentLangOption = LANG_OPTIONS.find((o) => o.id === lang)!;
 
   return (
     <>
@@ -54,27 +60,20 @@ export function Header() {
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between gap-2 px-4 sm:px-6">
           <Brand compact lang={lang} />
 
-          <div className="flex items-center gap-1.5">
-            <DropButton
-              open={langOpen}
-              onToggle={() => { setLangOpen((v) => !v); setThemeOpen(false); }}
-              onClose={() => setLangOpen(false)}
-              icon={<Globe className="h-4 w-4" />}
-              label={lang.toUpperCase()}
-            >
-              <LangMenu lang={lang} setLang={(l) => { setLang(l as Lang); setLangOpen(false); }} />
-            </DropButton>
-
-            <DropButton
-              open={themeOpen}
-              onToggle={() => { setThemeOpen((v) => !v); setLangOpen(false); }}
-              onClose={() => setThemeOpen(false)}
-              icon={<Palette className="h-4 w-4" />}
-              label={currentThemeMeta.label.split(' ')[0]}
-            >
-              <ThemeMenu lang={lang} current={theme} setTheme={(th) => { setTheme(th as import('../contexts/ThemeContext').ThemeName); setThemeOpen(false); }} />
-            </DropButton>
-          </div>
+          <HeaderToolbar
+            lang={lang}
+            theme={theme}
+            langOpen={langOpen}
+            themeOpen={themeOpen}
+            langLabel={t(lang, currentLangOption.labelKey)}
+            themeLabelText={themeLabel(lang, currentThemeMeta)}
+            onLangToggle={() => { setLangOpen((v) => !v); setThemeOpen(false); }}
+            onThemeToggle={() => { setThemeOpen((v) => !v); setLangOpen(false); }}
+            onLangClose={closeLang}
+            onThemeClose={closeTheme}
+            onSetLang={(l) => { setLang(l); closeLang(); }}
+            onSetTheme={(th) => { setTheme(th); closeTheme(); }}
+          />
         </div>
       </motion.header>
 
@@ -85,7 +84,6 @@ export function Header() {
         transition={{ type: 'spring', stiffness: 280, damping: 32, delay: 0.05 }}
         className="fixed inset-y-0 start-0 z-40 hidden w-60 flex-col border-e border-border/60 bg-card/90 backdrop-blur-xl lg:flex"
       >
-        {/* Brand */}
         <div className="px-4 py-5">
           <Brand lang={lang} />
         </div>
@@ -135,51 +133,32 @@ export function Header() {
             </motion.div>
           ))}
         </nav>
-
-        {/* Footer controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, delay: 0.35 }}
-          className="space-y-3 border-t border-border/60 p-4"
-        >
-          {/* Location pill */}
-          <div className="flex items-center gap-2 rounded-xl bg-accent/50 px-3 py-2 text-xs text-foreground/60">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-            <span className="truncate">{settings.location.name}</span>
-          </div>
-
-          {/* Language */}
-          <SidebarDropRow
-            open={langOpen}
-            onToggle={() => { setLangOpen((v) => !v); setThemeOpen(false); }}
-            onClose={() => setLangOpen(false)}
-            icon={<Globe className="h-3.5 w-3.5 text-primary" />}
-            label={t(lang, 'language')}
-            badge={
-              <span className="inline-flex h-5 w-7 items-center justify-center rounded-md bg-primary/15 text-[9px] font-black text-primary">
-                {lang.toUpperCase()}
-              </span>
-            }
-          >
-            <LangMenu lang={lang} setLang={(l) => { setLang(l); setLangOpen(false); }} />
-          </SidebarDropRow>
-
-          {/* Theme picker */}
-          <SidebarDropRow
-            open={themeOpen}
-            onToggle={() => { setThemeOpen((v) => !v); setLangOpen(false); }}
-            onClose={() => setThemeOpen(false)}
-            icon={<Palette className="h-3.5 w-3.5 text-primary" />}
-            label={t(lang, 'theme')}
-            badge={
-              <span className={['h-4 w-4 shrink-0 rounded-full ring-1 ring-border/40', currentThemeMeta.swatch].join(' ')} />
-            }
-          >
-            <ThemeMenu lang={lang} current={theme} setTheme={(th) => { setTheme(th as import('../contexts/ThemeContext').ThemeName); setThemeOpen(false); }} />
-          </SidebarDropRow>
-        </motion.div>
       </motion.aside>
+
+      {/* ── Desktop top bar (lang / theme / menu) ───────────────────── */}
+      <motion.header
+        initial={{ y: -56, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.08 }}
+        className="fixed top-0 end-0 z-30 hidden h-16 border-b border-border/60 bg-card/80 backdrop-blur-xl lg:start-60 lg:flex"
+      >
+        <div className="flex h-full w-full items-center justify-end px-4 xl:px-6">
+          <HeaderToolbar
+            lang={lang}
+            theme={theme}
+            langOpen={langOpen}
+            themeOpen={themeOpen}
+            langLabel={t(lang, currentLangOption.labelKey)}
+            themeLabelText={themeLabel(lang, currentThemeMeta)}
+            onLangToggle={() => { setLangOpen((v) => !v); setThemeOpen(false); }}
+            onThemeToggle={() => { setThemeOpen((v) => !v); setLangOpen(false); }}
+            onLangClose={closeLang}
+            onThemeClose={closeTheme}
+            onSetLang={(l) => { setLang(l); closeLang(); }}
+            onSetTheme={(th) => { setTheme(th); closeTheme(); }}
+          />
+        </div>
+      </motion.header>
 
       {/* ── Mobile bottom nav ────────────────────────────────────────── */}
       <motion.nav
@@ -234,6 +213,70 @@ export function Header() {
   );
 }
 
+/* ─── Lang / theme / menu toolbar (mobile top + desktop top nav) ─ */
+function HeaderToolbar({
+  lang,
+  theme,
+  langOpen,
+  themeOpen,
+  langLabel,
+  themeLabelText,
+  onLangToggle,
+  onThemeToggle,
+  onLangClose,
+  onThemeClose,
+  onSetLang,
+  onSetTheme,
+  showDivider = false,
+}: {
+  lang: Lang;
+  theme: string;
+  langOpen: boolean;
+  themeOpen: boolean;
+  langLabel: string;
+  themeLabelText: string;
+  onLangToggle: () => void;
+  onThemeToggle: () => void;
+  onLangClose: () => void;
+  onThemeClose: () => void;
+  onSetLang: (l: Lang) => void;
+  onSetTheme: (th: import('../contexts/ThemeContext').ThemeName) => void;
+  showDivider?: boolean;
+}) {
+  return (
+    <div
+      className={[
+        'flex shrink-0 items-center gap-1.5',
+        showDivider ? 'border-s border-border/40 ps-3' : '',
+      ].join(' ')}
+    >
+      <DropButton
+        open={langOpen}
+        onToggle={onLangToggle}
+        onClose={onLangClose}
+        icon={<Globe className="h-4 w-4" />}
+        label={langLabel}
+        showLabel
+      >
+        <LangMenu lang={lang} setLang={onSetLang} />
+      </DropButton>
+
+      <DropButton
+        open={themeOpen}
+        onToggle={onThemeToggle}
+        onClose={onThemeClose}
+        icon={<Palette className="h-4 w-4" />}
+        label={themeLabelText}
+        showLabel
+      >
+        <ThemeMenu lang={lang} current={theme} setTheme={(th) => onSetTheme(th as import('../contexts/ThemeContext').ThemeName)} />
+      </DropButton>
+
+      <MoreMenu showLabel />
+    </div>
+  );
+}
+
 /* ─── Brand ─────────────────────────────────────────────────── */
 function Brand({ compact = false, lang }: { compact?: boolean; lang: Lang }) {
   return (
@@ -246,82 +289,9 @@ function Brand({ compact = false, lang }: { compact?: boolean; lang: Lang }) {
   );
 }
 
-/* ─── Sidebar collapsible row (desktop only) ─────────────────── */
-function SidebarDropRow({
-  open, onToggle, onClose, icon, label, badge, children,
-}: {
-  open: boolean;
-  onToggle: () => void;
-  onClose: () => void;
-  icon: React.ReactNode;
-  label: string;
-  badge: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handler(e: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    }
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open, onClose]);
-
-  return (
-    <div ref={rootRef} className="relative">
-      <motion.button
-        type="button"
-        onClick={onToggle}
-        whileHover={{ x: 1 }}
-        className={[
-          'flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-xs font-bold transition-colors',
-          open
-            ? 'border-primary/40 bg-primary/8 text-primary'
-            : 'border-border/50 bg-accent/30 text-foreground/65 hover:border-primary/20 hover:bg-accent hover:text-foreground',
-        ].join(' ')}
-      >
-        <div className="flex items-center gap-2">
-          {icon}
-          <span>{label}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {badge}
-          <motion.span
-            animate={{ rotate: open ? 180 : 0 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex"
-          >
-            <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-          </motion.span>
-        </div>
-      </motion.button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            key="sidebar-drop"
-            initial={{ opacity: 0, y: -6, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.96 }}
-            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-full mb-2 start-0 end-0 z-50 overflow-hidden rounded-2xl border border-primary/20 bg-card/95 backdrop-blur-xl"
-          >
-            <div className="h-0.5 w-full bg-gradient-to-r from-primary to-tertiary" />
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 /* ─── Dropdown button wrapper ────────────────────────────────── */
 function DropButton({
-  open, onToggle, onClose, icon, label, children,
+  open, onToggle, onClose, icon, label, children, showLabel = false,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -329,25 +299,18 @@ function DropButton({
   icon: React.ReactNode;
   label: string;
   children: React.ReactNode;
+  showLabel?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handler(e: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    }
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open, onClose]);
+  useDismissOnOutsideClick(rootRef, open, onClose);
 
   return (
     <div ref={rootRef} className="relative">
       <motion.button
         type="button"
         onClick={onToggle}
+        aria-expanded={open}
+        aria-haspopup="listbox"
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         className={[
@@ -358,7 +321,7 @@ function DropButton({
         ].join(' ')}
       >
         {icon}
-        <span className="hidden sm:inline">{label}</span>
+        <span className={showLabel ? 'inline truncate' : 'hidden sm:inline'}>{label}</span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -370,17 +333,19 @@ function DropButton({
 
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute end-0 top-full z-50 mt-2 min-w-[10rem] overflow-hidden rounded-2xl border border-primary/20 bg-card/95 backdrop-blur-xl"
-          >
-            {/* top accent line */}
-            <div className="h-0.5 w-full bg-gradient-to-r from-primary to-tertiary" />
-            {children}
-          </motion.div>
+          <div className="absolute end-0 top-full z-50 min-w-[11rem] pt-2">
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden rounded-2xl border border-primary/20 bg-card/95 shadow-lg backdrop-blur-xl"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div className="h-0.5 w-full bg-gradient-to-r from-primary to-tertiary" />
+              {children}
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
@@ -397,7 +362,10 @@ function LangMenu({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void })
           <motion.button
             key={opt.id}
             type="button"
-            onClick={() => setLang(opt.id)}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setLang(opt.id);
+            }}
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             whileHover={{ x: 2 }}
@@ -437,30 +405,32 @@ function ThemeMenu({
   setTheme: (t: string) => void;
 }) {
   return (
-    <div className="p-2">
-      <div className="grid grid-cols-2 gap-1">
+    <div className="p-1.5">
+      <div className="flex flex-col gap-0.5">
         {THEMES.map((th, i) => {
           const active = current === th.name;
           return (
             <motion.button
               key={th.name}
               type="button"
-              onClick={() => setTheme(th.name)}
-              initial={{ opacity: 0, scale: 0.88 }}
-              animate={{ opacity: 1, scale: 1 }}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.13, delay: i * 0.02 }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setTheme(th.name);
+              }}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileHover={{ x: 2 }}
+              transition={{ duration: 0.14, delay: i * 0.03 }}
               className={[
-                'relative flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-bold transition-all',
+                'relative flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors',
                 active
-                  ? 'bg-primary/15 text-primary ring-1 ring-primary/40'
-                  : 'text-foreground/65 hover:bg-accent/70 hover:text-foreground',
+                  ? 'bg-primary/12 text-primary'
+                  : 'text-foreground/70 hover:bg-accent/70 hover:text-foreground',
               ].join(' ')}
             >
               <span className={['h-4 w-4 shrink-0 rounded-full ring-1 ring-border/30', th.swatch].join(' ')} />
               <span className="truncate text-start leading-none">
-                {lang === 'ar' ? th.labelAr : lang === 'ur' ? th.labelUr : th.label}
+                {themeLabel(lang, th)}
               </span>
               {active && <Check className="ms-auto h-3 w-3 shrink-0 text-primary" />}
             </motion.button>

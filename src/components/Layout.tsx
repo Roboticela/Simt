@@ -44,7 +44,7 @@ export function Layout({ children }: { children: ReactNode }) {
             animate="animate"
             exit="exit"
             transition={pageTransition}
-            className="mx-auto w-full max-w-2xl px-4 pt-20 pb-24 sm:px-6 sm:pt-22 md:max-w-4xl lg:max-w-5xl lg:px-8 lg:py-8 lg:pt-8 lg:pb-10"
+            className="mx-auto w-full max-w-2xl px-4 pt-20 pb-24 sm:px-6 sm:pt-22 md:max-w-4xl lg:max-w-5xl lg:px-8 lg:pb-10 lg:pt-20"
           >
             {children}
           </motion.main>

@@ -20,6 +20,7 @@ const LANG_OPTIONS: { id: Lang; code: string; labelKey: string }[] = [
   { id: 'en', code: 'EN', labelKey: 'english' },
   { id: 'ar', code: 'AR', labelKey: 'arabic' },
   { id: 'ur', code: 'UR', labelKey: 'urdu' },
+  { id: 'hi', code: 'HI', labelKey: 'hindi' },
 ];
 
 const NOTIFY_PRAYERS: NotifyPrayer[] = ['fajr', 'zuhr', 'asr', 'maghrib', 'isha'];

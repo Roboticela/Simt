@@ -8,6 +8,7 @@ import { TimeText } from './TimeText';
 import { Card } from './ui/Card';
 import { useLang } from '../contexts/LanguageContext';
 import { prayerLabel, monthLabel, t } from '../lib/i18n';
+import { stickyTableDayCell, stickyTableDayHeader } from '../lib/utils';
 import type { PrayerKey } from '../lib/constants';
 import type { LucideIcon } from 'lucide-react';
 
@@ -209,7 +210,7 @@ export function PrayerYearTable({ month, year = new Date().getFullYear(), showAl
         <table className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b border-border/40 bg-accent/30">
-              <th className="sticky start-0 z-10 bg-accent/95 px-4 py-3 text-start text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/50">
+              <th className={stickyTableDayHeader('px-4 py-3 text-start text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/50')}>
                 {t(lang, 'day')}
               </th>
               {shownCols.map((c) => (
@@ -229,11 +230,11 @@ export function PrayerYearTable({ month, year = new Date().getFullYear(), showAl
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.12, delay: i * 0.008 }}
                   className={[
-                    'border-b border-border/25 transition-colors hover:bg-accent/30',
+                    'group border-b border-border/25 transition-colors hover:bg-accent/30',
                     isToday ? 'bg-primary/8' : i % 2 === 1 ? 'bg-accent/15' : '',
                   ].join(' ')}
                 >
-                  <td className="sticky start-0 z-10 bg-inherit px-4 py-2.5">
+                  <td className={stickyTableDayCell(isToday, i % 2 === 1, 'px-4 py-2.5')}>
                     <div className="flex items-center gap-2">
                       {isToday && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                       <span className={['font-bold tabular-nums', isToday ? 'text-primary' : 'text-foreground'].join(' ')}>

@@ -7,7 +7,7 @@ const RTL_LANGS: Lang[] = ['ar', 'ur'];
 function readSaved(): Lang {
   if (typeof window === 'undefined') return 'en';
   const v = localStorage.getItem(STORAGE_KEY) as Lang | null;
-  if (v === 'en' || v === 'ar' || v === 'ur') return v;
+  if (v === 'en' || v === 'ar' || v === 'ur' || v === 'hi') return v;
   return 'en';
 }
 
